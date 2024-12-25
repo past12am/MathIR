@@ -20,3 +20,7 @@
     ```
 
 4. Run ``get_clean_json.py``
+
+
+## Setup ColBERT
+TODO
