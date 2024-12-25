@@ -8,141 +8,180 @@ from tqdm import tqdm
 from os import makedirs
 import pandas as pd
 
-# Create training set: <Query, Positive Document, Negative Document> triples
+def select_rand_incorrect_answer(corr_entry, rand_other_tag_override=None):
+    rand_other_tag = random.choice(corr_entry['tags']) if rand_other_tag_override is None else rand_other_tag_override
 
-data_path = '../ARQMath/data_preprocessing/'
-out_path = '../ARQMathAgg/dataset'
-train_p = 0.7  # --> valid_p = 1 - train_p
+    if len(questions_with_answers[rand_other_tag]) == 1:
+        for i in range(len(corr_entry['tags'])):
+            rand_other_tag = corr_entry['tags'][i]
+
+            if len(questions_with_answers[rand_other_tag]) > 1:
+                break
+
+        rand_other_tag = None
+
+
+    if(rand_other_tag is None or len(questions_with_answers[rand_other_tag]) <= 1):     # TODO configurable Thresh
+        rand_other_tag = random.choice(list(questions_with_answers.keys()))
+
+    # at this point we have a tag that will definitely yield a result
+
+    rand_other_entry = None
+
+    while (rand_other_entry is None):
+        rand_other_entry = random.choice(questions_with_answers[rand_other_tag])
+
+        if (rand_other_entry["post_id"] == corr_entry["post_id"]):
+            rand_other_entry = None
+
+    return rand_other_entry
+
+
+
+def concatenate_answers(answers, corr_idx=None):
+    res = ""
+    start_char = None
+    end_char = None
+    for idx, answer in enumerate(answers):
+        if (idx == corr_idx):
+            start_char = len(res)
+
+        res += "{" + answer + "}"
+
+        if (idx == corr_idx):
+            end_char = len(res)
+
+    return res, start_char, end_char
+
+
+
+data_path = 'ARQMath/data_preprocessing/'
+out_path = 'ARQMathAgg/dataset'
+train_p = 0.7  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
 # Configuration for concatenation
-min_answers = 2
-max_answers = 5  # Randomize the number of answers concatenated
+min_answers = 4
+max_answers = 20  # Randomize the number of answers concatenated
+
+
+
 
 data = json.load(open(f'{data_path}/cleaned_with_links.json', encoding='utf-8'))
 makedirs(out_path, exist_ok=True)
 
-# 1. Remove questions without answers and group by tags
+
+# 1. Remove questions without answers
+# 2. Group questions by tag
 questions_with_answers = defaultdict(list)
 for q in data:
     if 'answers' not in q:
-        continue
+        continue  # we only want questions with answers
     for tag in q['tags']:
         questions_with_answers[tag].append(q)
 
-# 2. Prepare <Query, Positive Document, Negative Document> triples
-triples = []
-jsonl_triples = []
-queries = []
-collection = []
-query_id_map = {}
-doc_id_map = {}
-query_counter = 0
-doc_counter = 0
 
-for q in tqdm(data):
-    if 'answers' not in q:
+# 3. Check number of questions for each tag
+print('Questions with answers, sizes by tag:')
+for tag in questions_with_answers:
+    print(tag, len(questions_with_answers[tag]))
+
+
+
+# 4. For each questions: get one correct answer (random out of all answers of this question) and one incorrect answer with at least one common tag
+queries = list()
+collection = list()
+triples = list()
+meta = list()
+
+doc_ctr = 0
+for d in tqdm(data):
+    question = d["question"]
+    correct_answer = None
+    wrong_answer = None
+
+    # Sample Correct
+    if 'answers' in d:
+        correct_answer = random.choice(d['answers'])
+        #correct_pairs.append((d['title'] + ' ' + d['question'] , correct_answer, '1')) # Label 1 for correct question-answer pairs
+    else:
         continue
 
-    # Positive document: Randomize the number of concatenated answers
-    num_answers = random.randint(min_answers, max_answers)
-    positive_answers = random.sample(q['answers'], min(len(q['answers']), num_answers))
-    positive_doc = "\n\n".join([f"Section {i+1}:\n{ans}" for i, ans in enumerate(positive_answers)])
+    # Sample Incorrect
+    num_wrong = random.randint(min_answers, max_answers)
+    
+    wrong_answer_post_ids = list()
+    wrong_answer_entries = list()
+    fail_ctr = 0
+    while (len(wrong_answer_entries) < num_wrong):
 
-    # Track which answer is the correct one
-    correct_answer = random.choice(positive_answers)
-    correct_idx = positive_answers.index(correct_answer)
+        if(fail_ctr <= 2 * num_wrong):
+            wrong_answer_entry = select_rand_incorrect_answer(d)
+        else:
+            # we need to sample differently
+            wrong_answer_entry = select_rand_incorrect_answer(d, random.choice(list(questions_with_answers.keys())))
 
-    # Assign IDs for query and documents
-    if q['post_id'] not in query_id_map:
-        query_id_map[q['post_id']] = query_counter
-        queries.append({
-            'qid': query_counter,
-            'query': q['title'] + ' ' + q['question']
-        })
-        query_counter += 1
+        
+        if(wrong_answer_entry["post_id"] in wrong_answer_post_ids):
+            fail_ctr += 1
+            continue
 
-    positive_doc_id = doc_counter
-    doc_id_map[positive_doc_id] = positive_doc
-    collection.append({
-        'pid': positive_doc_id,
-        'document': positive_doc
-    })
-    doc_counter += 1
+        wrong_answer_entries.append(wrong_answer_entry)
+        wrong_answer_post_ids.append(wrong_answer_entry["post_id"])
 
-    # Negative document: Select answers from other questions with shared tags
-    tag_a = random.choice(q['tags'])
-    try:
-        d_b = random.choice(questions_with_answers[tag_a])
-    except:
-        # If no questions available, pick a random tag and question
-        tag_a = random.choice(list(questions_with_answers.keys()))
-        d_b = random.choice(questions_with_answers[tag_a])
 
-    while q['post_id'] == d_b['post_id']:
-        tag_a = random.choice(q['tags'])
-        if len(questions_with_answers[tag_a]) == 1:
-            tag_a = random.choice(list(questions_with_answers.keys()))
-        d_b = random.choice(questions_with_answers[tag_a])
+    # Build Correct and incorrect documents
+    wrong_answers = [ answer for wrong_answer_entry in wrong_answer_entries for answer in wrong_answer_entry["answers"] ]
+    wrong_answer_ids = [ answer for wrong_answer_entry in wrong_answer_entries for answer in wrong_answer_entry["answer_ids"] ]
 
-    num_negative_answers = random.randint(min_answers, max_answers)
-    negative_answers = random.sample(d_b['answers'], min(len(d_b['answers']), num_negative_answers))
-    negative_doc = "\n\n".join([f"Section {i+1}:\n{ans}" for i, ans in enumerate(negative_answers)])
+    corr_fraction = random.randint(int(0.2 * len(wrong_answers)), int(0.8 * len(wrong_answers)))
 
-    negative_doc_id = doc_counter
-    doc_id_map[negative_doc_id] = negative_doc
-    collection.append({
-        'pid': negative_doc_id,
-        'document': negative_doc
-    })
-    doc_counter += 1
+    corr_idx = random.randint(0, corr_fraction - 1) if corr_fraction > 1 else 0
+    corr_doc_list = wrong_answers[0:corr_fraction]
+    corr_doc_list.insert(corr_idx, correct_answer)
+    
 
-    # Ensure no overlap between positive and negative documents
-    if any(ans in positive_answers for ans in negative_answers):
-        continue
+    corr_doc, start_char, end_char = concatenate_answers(corr_doc_list, corr_idx)
 
-    triples.append({
-        'query': q['title'] + ' ' + q['question'],
-        'positive_doc': positive_doc,
-        'negative_doc': negative_doc,
-        'correct_idx': correct_idx  # Index of the correct answer in the positive document
-    })
+    false_doc, _, _ = concatenate_answers(wrong_answers[corr_fraction::])
 
-    jsonl_triples.append({
-        'qid': query_id_map[q['post_id']],
-        'pid+': positive_doc_id,
-        'pid-': negative_doc_id
-    })
 
-# 3. Shuffle and split the data
-shuffle(triples)
-shuffle(jsonl_triples)
-no_all = len(triples)
-no_train = int(no_all * train_p)
-no_val = no_all - no_train
+    #Put together dataset
+    queries.append({"qid": d["post_id"], "query": question})
+    
+    collection.append({"pid": doc_ctr, "doc": corr_doc})
+    collection.append({"pid": doc_ctr + 1, "doc": false_doc})
 
-train_triples = triples[:no_train]
-val_triples = triples[no_train:]
-train_jsonl = jsonl_triples[:no_train]
-val_jsonl = jsonl_triples[no_train:]
+    triples.append({"qid": d["post_id"], "pid+": doc_ctr, "pid-": doc_ctr + 1})
 
-def save_split(split, triples, jsonl_data):
-    df = pd.DataFrame(triples)
-    df.to_csv(f'{out_path}/arqmath_task1_{split}.csv', index_label='idx')
-    with open(f'{out_path}/arqmath_task1_{split}.jsonl', 'w', encoding='utf-8') as f:
-        for item in jsonl_data:
-            f.write(json.dumps(item) + '\n')
+    meta.append({"qid": d["post_id"], "pid+": doc_ctr, "pid-": doc_ctr + 1, "start_char": start_char, "end_char": end_char})
 
-def save_queries_and_collection():
-    with open(f'{out_path}/queries.tsv', 'w', encoding='utf-8') as f:
-        for query in queries:
-            f.write(f"{query['qid']}\t{query['query']}\n")
+    doc_ctr += 2
 
-    with open(f'{out_path}/collection.tsv', 'w', encoding='utf-8') as f:
-        for doc in collection:
-            f.write(f"{doc['pid']}\t{doc['document']}\n")
 
-save_split('train', train_triples, train_jsonl)
-save_split('dev', val_triples, val_jsonl)
-save_queries_and_collection()
+# Save dataset to files
 
-print('Done creating <Query, Positive Document, Negative Document> triples for training and JSONL files.')
+with open(f'{out_path}/queries.tsv', 'w', encoding='utf-8') as f:
+    for query in queries:
+        f.write(f"{query['qid']}\t{query['query']}\n")
+
+with open(f'{out_path}/collection.tsv', 'w', encoding='utf-8') as f:
+    for doc in collection:
+        f.write(f"{doc['pid']}\t{doc['doc']}\n")
+
+
+num_train = int(len(triples) * train_p)
+with open(f'{out_path}/triples_train.tsv', 'w', encoding='utf-8') as f:
+    for t in triples[0:num_train]:
+        f.write(f"{t['qid']}\t{t["pid+"]}\t{t["pid-"]}\n")
+
+with open(f'{out_path}/triples_test.tsv', 'w', encoding='utf-8') as f:
+    for t in triples[num_train::]:
+        f.write(f"{t['qid']}\t{t["pid+"]}\t{t["pid-"]}\n")
+
+
+with open(f'{out_path}/meta_train.json', 'w', encoding='utf-8') as f:
+    f.write(json.dumps(meta[0:num_train]))
+
+with open(f'{out_path}/meta_test.json', 'w', encoding='utf-8') as f:
+    f.write(json.dumps(meta[num_train::]))
+
