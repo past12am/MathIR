@@ -24,20 +24,17 @@ if __name__=='__main__':
         You should be careful about having global statements, that are not guarded with an if __name__ == '__main__'. If a different start method than fork is used, they will be executed in all subprocesses.
     """
 
-    dataroot = 'downloads/lotte'
-    dataset = 'lifestyle'
-    datasplit = 'test'
-    
-    collection = os.path.join(dataroot, dataset, datasplit, 'collection.tsv')
+    dataroot = '../ARQMathAgg/dataset/'
+    collection = os.path.join(dataroot, 'collection.tsv')
 
 
-    nbits = 2   # encode each dimension with 2 bits
-    doc_maxlen = 300   # truncate passages at 300 tokens
+    nbits = 4   # encode each dimension with 2 bits
+    doc_maxlen = 500   # truncate passages at 300 tokens
 
     checkpoint = '/home/past12am/Projects/MathIR/ColBERTCheckpoints/colbertv2.0'
-    index_name = f'{dataset}.{datasplit}.{nbits}bits'
+    index_name = f'arqmath.full.{nbits}bits'
 
-    with Run().context(RunConfig(nranks=1, experiment="ColBERTTest")):
+    with Run().context(RunConfig(nranks=1, experiment="ColBERTTestARQMath")):
 
         config = ColBERTConfig(
             nbits=2,
