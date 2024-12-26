@@ -2,6 +2,7 @@
 
 # TODO randomization beforehand to be 100% sure we don't leak test-data in the train set
 
+import sys
 import json
 import random
 from random import shuffle
@@ -180,8 +181,8 @@ def main(data_path, out_path, train_p, min_answers, max_answers):
 
 
 if __name__ == "__main__":
-    data_path = 'ARQMath/data_preprocessing/'
-    out_path = 'ARQMathAgg/dataset'
+    data_path = sys.argv[1]
+    out_path = sys.argv[2]
     train_p = 0.7  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
     # Configuration for concatenation
