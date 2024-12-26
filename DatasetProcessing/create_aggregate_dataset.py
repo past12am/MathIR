@@ -181,8 +181,8 @@ def main(data_path, out_path, train_p, min_answers, max_answers):
 
 
 if __name__ == "__main__":
-    data_path = sys.argv[1]
-    out_path = sys.argv[2]
+    data_path = "../ARQMath"
+    out_path = "../ARQMathAgg/dataset/"
     train_p = 0.7  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
     # Configuration for concatenation

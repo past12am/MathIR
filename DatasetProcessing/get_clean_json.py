@@ -11,7 +11,7 @@ from collections import defaultdict
 import json
 
 def main(data_path, out_dir):
-    reader = DataReaderRecord(data_path, version='1.3')
+    reader = DataReaderRecord(data_path, version='.V1.3')
     answers = defaultdict(list)
 
     cleaned = []
@@ -49,5 +49,5 @@ def main(data_path, out_dir):
 
 
 if __name__ == "__main__":
-    main(data_path=sys.argv[1],
-         out_dir=sys.argv[2])
+    main(data_path="../ARQMath/raw/",
+         out_dir="../ARQMath/data_preprocessing/")
