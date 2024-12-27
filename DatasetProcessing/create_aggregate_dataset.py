@@ -61,11 +61,17 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
     # 1. Remove questions without answers
     # 2. Group questions by tag
     questions_with_answers = defaultdict(list)
+    all_answer_ids = set()
     for q in data:
         if 'answers' not in q:
             continue  # we only want questions with answers
+
         for tag in q['tags']:
             questions_with_answers[tag].append(q)
+
+        for pid in q['answer_ids']:
+            all_answer_ids.add(pid)
+
 
 
     # 3. Check number of questions for each tag
@@ -80,16 +86,19 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
     collection = list()
     triples = list()
     meta = list()
+    qrel = list()
 
     doc_ctr = 0
     for d in tqdm(data):
         question = d["question"]
+
         correct_answer = None
-        wrong_answer = None
+        all_correct_answers_ids = None
 
         # Sample Correct
         if 'answers' in d:
             correct_answer = random.choice(d['answers'])
+            all_correct_answers_ids = d["answer_ids"]
             #correct_pairs.append((d['title'] + ' ' + d['question'] , correct_answer, '1')) # Label 1 for correct question-answer pairs
         else:
             continue
@@ -143,6 +152,9 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
 
         meta.append({"qid": d["post_id"], "pid+": doc_ctr, "pid-": doc_ctr + 1, "start_char": start_char, "end_char": end_char})
 
+        for aid in all_correct_answers_ids:
+            qrel.append({"qid": d["post_id"], "pid": aid, "relevance": 1})
+
         doc_ctr += 2
 
 
@@ -162,6 +174,10 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
 
     with open(f'{out_path}/meta_{filename_postfix}.json', 'w', encoding='utf-8') as f:
         f.write(json.dumps(meta))
+
+    with open(f'{out_path}/qrel_{filename_postfix}', 'w', encoding='utf-8') as f:
+        for qrel_entry in qrel:
+            f.write(f"{qrel_entry["qid"]} 0 {qrel_entry["pid"]} {qrel_entry["relevance"]}\n")
 
 
 def main(data_path, out_path, train_p, min_answers, max_answers):
