@@ -1,7 +1,5 @@
 # based on https://github.com/AnReu/ALBERT-for-Math-AR/blob/main/preprocessing_scripts/create_training_data_task1.py
 
-# TODO randomization beforehand to be 100% sure we don't leak test-data in the train set
-
 import sys
 import json
 import random
@@ -10,6 +8,7 @@ from collections import defaultdict
 from tqdm import tqdm
 from os import makedirs
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 def select_rand_incorrect_answer(corr_entry, questions_with_answers, rand_other_tag_override=None):
     rand_other_tag = random.choice(corr_entry['tags']) if rand_other_tag_override is None else rand_other_tag_override
@@ -57,12 +56,7 @@ def concatenate_answers(answers, corr_idx=None):
     return res, start_char, end_char
 
 
-
-def main(data_path, out_path, train_p, min_answers, max_answers):
-    
-    data = json.load(open(f'{data_path}/cleaned_with_links.json', encoding='utf-8'))
-    makedirs(out_path, exist_ok=True)
-
+def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
 
     # 1. Remove questions without answers
     # 2. Group questions by tag
@@ -154,39 +148,40 @@ def main(data_path, out_path, train_p, min_answers, max_answers):
 
     # Save dataset to files
 
-    with open(f'{out_path}/queries.tsv', 'w', encoding='utf-8') as f:
+    with open(f'{out_path}/queries_{filename_postfix}.tsv', 'w', encoding='utf-8') as f:
         for query in queries:
             f.write(f"{query['qid']}\t{query['query']}\n")
 
-    with open(f'{out_path}/collection.tsv', 'w', encoding='utf-8') as f:
+    with open(f'{out_path}/collection_{filename_postfix}.tsv', 'w', encoding='utf-8') as f:
         for doc in collection:
             f.write(f"{doc['pid']}\t{doc['doc']}\n")
 
+    with open(f'{out_path}/triples_{filename_postfix}.jsonl', 'w', encoding='utf-8') as f:
+        for t in triples:
+            f.write(f"[{t['qid']},{t["pid+"]},{t["pid-"]}]\n")
 
-    num_train = int(len(triples) * train_p)
-    with open(f'{out_path}/triples_train.tsv', 'w', encoding='utf-8') as f:
-        for t in triples[0:num_train]:
-            f.write(f"{t['qid']}\t{t["pid+"]}\t{t["pid-"]}\n")
-
-    with open(f'{out_path}/triples_test.tsv', 'w', encoding='utf-8') as f:
-        for t in triples[num_train::]:
-            f.write(f"{t['qid']}\t{t["pid+"]}\t{t["pid-"]}\n")
+    with open(f'{out_path}/meta_{filename_postfix}.json', 'w', encoding='utf-8') as f:
+        f.write(json.dumps(meta))
 
 
-    with open(f'{out_path}/meta_train.json', 'w', encoding='utf-8') as f:
-        f.write(json.dumps(meta[0:num_train]))
+def main(data_path, out_path, train_p, min_answers, max_answers):
+    data = json.load(open(f'{data_path}/cleaned_with_links.json', encoding='utf-8'))
+    makedirs(out_path, exist_ok=True)
 
-    with open(f'{out_path}/meta_test.json', 'w', encoding='utf-8') as f:
-        f.write(json.dumps(meta[num_train::]))
+    # Split train and test parts
+    train, test = train_test_split(data, train_size=train_p)
+    create_dataset(train, out_path, "train", min_answers, max_answers)
+    create_dataset(test, out_path, "test", min_answers, max_answers)
+
 
 
 if __name__ == "__main__":
-    data_path = "../ARQMath"
+    data_path = "../ARQMath/data_preprocessing/"
     out_path = "../ARQMathAgg/dataset/"
     train_p = 0.7  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
     # Configuration for concatenation
     min_answers = 4
-    max_answers = 20  # Randomize the number of answers concatenated
+    max_answers = 10  # Randomize the number of answers concatenated
 
     main(data_path, out_path, train_p, min_answers, max_answers)
