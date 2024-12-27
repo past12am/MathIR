@@ -1,8 +1,9 @@
 # MathIR
+Note: for all imports to work always run the python scripts from within the directory they are located at
 
-## Setup Dataset
+## Build Dataset
 
-1. Download ARQMath from https://drive.google.com/drive/folders/1YekTVvfmYKZ8I5uiUMbs21G2mKwF9IAm into ARQMath/raw/
+1. Download ARQMath from https://drive.google.com/drive/folders/1YekTVvfmYKZ8I5uiUMbs21G2mKwF9IAm into ```ARQMath/raw/```
 
 2. Clone ARQMath Code Repo: https://github.com/ARQMath/ARQMathCode into DatasetProcesssing/ARQMathCode
 ```git clone https://github.com/ARQMath/ARQMathCode```
@@ -17,6 +18,6 @@
 ### Training
 
 ### Indexing
-To index the full collection.tsv set the paths in and run the file (this might take )
+To index the collection_test.tsv part of the dataset set the paths in and run the file ```ColBERT_index.py``` located in ```ColBERTScripts/```. This will take quite some memory and time.
 
 ### Evaluation
