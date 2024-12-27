@@ -3,8 +3,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ColBERT'))
 
 from ColBERT.colbert.infra import Run, RunConfig, ColBERTConfig
-from ColBERT.colbert.data import Queries, Collection
-from ColBERT.colbert import Indexer, Searcher
+from ColBERT.colbert import Searcher
 
 
 
