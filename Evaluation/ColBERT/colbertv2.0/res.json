@@ -1,0 +1,15 @@
+Metric,ValueRR@10,0.0
+Judged@10,0.0
+P@5,0.0
+RR@50,0.0
+P@10,0.0
+P@50,0.0
+RR@5,0.0
+nDCG@10,0.0
+AP@5,0.0
+nDCG@5,0.0
+nDCG@50,0.0
+Judged@50,0.0
+Judged@5,0.0
+AP@10,0.0
+AP@50,0.0
