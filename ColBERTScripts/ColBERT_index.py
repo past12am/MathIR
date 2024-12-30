@@ -29,17 +29,19 @@ if __name__=='__main__':
     collection = os.path.join(dataroot, f'collection_{dataset_fraction}.tsv')
 
 
-    nbits = 2   # encode each dimension with 2 bits
-    doc_maxlen = 300   # truncate passages at 300 tokens
+    nbits = 2
+    doc_maxlen = 512
+    query_maxlen = 128
 
-    checkpoint = '/home/past12am/Projects/MathIR/ColBERTCheckpoints/colbertv2.0'
+    checkpoint = '/home/past12am/Projects/MathIR/ColBERTCheckpoints/colbertmath3'
     index_name = f'arqmath.{dataset_fraction}.{nbits}bits'
 
-    with Run().context(RunConfig(nranks=1, experiment="ColBERTTestARQMath")):
+    with Run().context(RunConfig(nranks=1, experiment="exp_colbertmath3")):
 
         config = ColBERTConfig(
             nbits=nbits,
             doc_maxlen=doc_maxlen,
+            query_maxlen=query_maxlen,
             kmeans_niters=10
         )
 

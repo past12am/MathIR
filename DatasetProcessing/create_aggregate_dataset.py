@@ -89,6 +89,13 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
     qrel = list()
 
     doc_ctr = 0
+
+    doc_maxlen = 0
+    doc_avglen = 0
+    query_maxlen = 0
+    query_avglen = 0
+    samples_ctr = 0
+
     for d in tqdm(data):
         question = d["question"]
 
@@ -144,9 +151,25 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
 
         #Put together dataset
         queries.append({"qid": d["post_id"], "query": question})
+
+        query_len = len(question.split(' '))
+        query_avglen += query_len
+        if(query_len >= query_maxlen):
+            query_maxlen = query_len
         
         collection.append({"pid": doc_ctr, "doc": corr_doc})
         collection.append({"pid": doc_ctr + 1, "doc": false_doc})
+
+
+        doc_pos_len = len(corr_doc.split(' '))
+        doc_neg_len = len(false_doc.split(' '))
+        doc_avglen += doc_pos_len
+        doc_avglen += doc_neg_len
+
+        if(doc_pos_len >= doc_maxlen):
+            doc_maxlen = doc_pos_len
+        if(doc_neg_len >= doc_maxlen):
+            doc_maxlen = doc_neg_len
 
         triples.append({"qid": d["post_id"], "pid+": doc_ctr, "pid-": doc_ctr + 1})
 
@@ -156,6 +179,7 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
             qrel.append({"qid": d["post_id"], "pid": aid, "relevance": 1})
 
         doc_ctr += 2
+        samples_ctr += 1
 
 
     # Save dataset to files
@@ -179,6 +203,14 @@ def create_dataset(data, out_path, filename_postfix, min_answers, max_answers):
         for qrel_entry in qrel:
             f.write(f"{qrel_entry["qid"]} 0 {qrel_entry["pid"]} {qrel_entry["relevance"]}\n")
 
+    
+    query_avglen /= samples_ctr
+    doc_avglen /= doc_ctr
+
+    print(f"Dataset [{filename_postfix}] with")
+    print(f"Query max words ~ {query_maxlen},      Query avg words ~ {query_avglen}")
+    print(f"Document max words ~ {doc_maxlen},      Document avg words ~ {doc_avglen}")
+
 
 def main(data_path, out_path, train_p, min_answers, max_answers):
     data = json.load(open(f'{data_path}/cleaned_with_links.json', encoding='utf-8'))
@@ -193,11 +225,11 @@ def main(data_path, out_path, train_p, min_answers, max_answers):
 
 if __name__ == "__main__":
     data_path = "../ARQMath/data_preprocessing/"
-    out_path = "../ARQMathAgg/dataset/"
+    out_path = "../ARQMathAgg/dataset_2_4/"
     train_p = 0.7  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
     # Configuration for concatenation
-    min_answers = 4
-    max_answers = 10  # Randomize the number of answers concatenated
+    min_answers = 2
+    max_answers = 3  # Randomize the number of answers concatenated
 
     main(data_path, out_path, train_p, min_answers, max_answers)
