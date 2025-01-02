@@ -160,27 +160,6 @@ def create_dataset(data, out_path, filename_postfix):
         for t in triples:
             for pos_id, neg_id in zip(t["pid+"], t["pid-"]):
                 f.write(f"[{t['qid']},{pos_id},{neg_id}]\n")
-
-    """
-    with open(f'{out_path}/triples_{filename_postfix}.jsonl', 'w', encoding='utf-8') as f:
-        f.write("[")
-        for t_ctr, t in enumerate(triples):
-            f.write(f"[{t['qid']}, [")
-
-            for pair_ctr, (pos_id, neg_id) in enumerate(zip(t["pid+"], t["pid-"])):
-                f.write(f"[{pos_id},{neg_id}]")
-
-                if(pair_ctr < len(t["pid+"]) - 1):
-                    f.write(",")
-
-            
-            if(t_ctr < len(triples) - 1):
-                f.write("],\n")
-            else:
-                f.write("]")
-                
-        f.write("]")
-    """
     
 
     with open(f'{out_path}/qrel_{filename_postfix}', 'w', encoding='utf-8') as f:
