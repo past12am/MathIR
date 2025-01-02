@@ -3,7 +3,7 @@ Note: for all imports to work always run the python scripts from within the dire
 
 ## Download Dataset and ColBERT checkpoints
 
-To download the dataset, checkpoints and indexes got to TODO where you find the directories
+To download the dataset, checkpoints and indexes got to https://drive.google.com/drive/folders/15jWaEAD85A5DTr3CA_rPhNvoOHo8Uhak?usp=sharing where you find the directories
 ```
     ARQMathAgg/
     ColBERTCheckpoints/

@@ -9,9 +9,9 @@ from colbert import Trainer
 def train():
     # use 4 gpus (e.g. four A100s, but you can use fewer by changing nway,accumsteps,bsize).
     with Run().context(RunConfig(nranks=1)):
-        triples = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_2_3/triples_train.jsonl'
-        queries = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_2_3/queries_train.tsv'
-        collection = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_2_3/collection_train.tsv'
+        triples = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_v2/triples_train.jsonl'
+        queries = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_v2/queries_train.tsv'
+        collection = '/home/past12am/Projects/MathIR/ARQMathAgg/dataset_v2/collection_train.tsv'
 
         checkpoint = '/home/past12am/Projects/MathIR/ColBERTCheckpoints/colbertv2.0'
 
@@ -19,7 +19,7 @@ def train():
         config = ColBERTConfig(
             bsize=12, 
             lr=3e-06, 
-            warmup=10_000,
+            warmup=2_000,
             doc_maxlen=512,
             query_maxlen=128,
             dim=128,
@@ -27,8 +27,7 @@ def train():
             accumsteps=1,
             similarity='cosine',
             use_ib_negatives=True,
-            maxsteps=60_000,
-            verbose=3
+            maxsteps=60_000
         )
         
         trainer = Trainer(triples=triples, queries=queries, collection=collection, config=config)
