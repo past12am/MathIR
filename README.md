@@ -24,6 +24,17 @@ Skip if you downloaded the dataset
 
 5. Set configuration in ``create_aggregate_dataset.py`` and run the script
 
+## Dataset Structure
+The dataset consists of the following files:
+
+queries_train.tsv: Contains training query IDs and their corresponding query text.
+queries_test.tsv: Contains test query IDs and their corresponding query text.
+triples_train.jsonl: Contains training query IDs paired with positive and negative document IDs.
+triples_test.jsonl: Contains test query IDs paired with positive and negative document IDs.
+collection_train.tsv: Contains document IDs and their corresponding text for training, with both positive and negative examples.
+collection_test.tsv: Contains document IDs and their corresponding text for testing, with both positive and negative examples.
+qrel_train: Contains relevance labels for the training dataset, mapping query IDs to relevant document IDs.
+qrel_test: Contains relevance labels for the test dataset, mapping query IDs to relevant document IDs.
 
 ## ColBERT
 Skip Training and Indexing if you downloaded the checkpoints and indexes
