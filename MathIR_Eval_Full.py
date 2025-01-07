@@ -62,7 +62,7 @@ def main():
 
     #   Evaluation
     gen_run_file = True
-    break_at = 100
+    break_at = 20000
     cutoffs = [5,10,25]
 
     perform_doc_aggregation = False         # false: ALBERT as a re-ranker,     true: ALBERT as selection/ranking of subset (performance issue)
