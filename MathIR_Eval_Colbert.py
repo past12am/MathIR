@@ -17,28 +17,31 @@ def main():
     # Configuration
 
     #   Dataset
-    collection_path = './ARQMathAgg/dataset/collection_test.tsv'
-    queries_path = './ARQMathAgg/dataset/queries_test.tsv'
-    triples_path = './ARQMathAgg/dataset/triples_test.jsonl'
+    collection_path = './ARQMathAgg/dataset_v2/collection_test.tsv'
+    queries_path = './ARQMathAgg/dataset_v2/queries_test.tsv'
+    triples_path = './ARQMathAgg/dataset_v2/triples_test.jsonl'
 
-    qrelfile = './ARQMathAgg/dataset/qrel_test'
+    qrelfile = './ARQMathAgg/dataset_v2/qrel_test'
 
 
     #   ColBERT
-    colbert_checkpoint = './ColBERTCheckpoints/colbertv2.0'
+    colbert_version = "colbertmath4" #"colbertv2.0"
 
-    colbert_index_root = './ARQMathAgg/indexes/colbertv2.0/'
+    colbert_checkpoint = f'./ColBERTCheckpoints/{colbert_version}'
+
+    colbert_index_root = f'./ARQMathAgg/indexes/{colbert_version}/'
     colbert_index = 'arqmath.test.2bits'
 
 
     #   Output
-    eval_res_out_path = './Evaluation/ColBERT/colbertv2.0/'
+    eval_res_out_path = f'./Evaluation/ColBERT/{colbert_version}/'
 
 
     #   Settings
-    gen_run_file = False
+    gen_run_file = True
     k = 50
     cutoffs = [5,10,50]
+    break_at = None
 
 
 
@@ -57,18 +60,90 @@ def main():
         # Generate resulst file (https://cs.usm.maine.edu/~behrooz.mansouri/courses/Slides_IR_22/Introduction%20to%20Information%20Retrieval%20--%20Session%206%20-%20Evaluation%20Measures.pdf)
         with open(runfile, 'w', encoding='utf-8') as f:
 
-            for ((query_qid, query), (qid, pid_pos, pid_neg)) in tqdm(zip(queries, triples_df.itertuples(index=False)), total=len(queries)):
-                assert(query_qid == qid)
+            ctr = 0
+            for ((query_qid, query)) in tqdm(queries, total=(len(queries) if break_at is None else break_at)):
 
                 matches = colbert.get_documents_ColBERT(query, k=k)
 
                 for match in matches:
                     f.write(f"{query_qid} Q0 {match["pid"]} {match["rank"]} {match["score"]} STANDARD\n")
 
+                ctr += 1
+                if(break_at is not None and ctr >= break_at):
+                    break
+                
+
 
     # Evaluate run
     qrels = ir_measures.read_trec_qrels(qrelfile)
-    run = ir_measures.read_trec_run(runfile)
+    runs = ir_measures.read_trec_run(runfile)
+
+    qrels_pd = pd.read_csv(qrelfile, sep=" ", names=["query_id", "zero", "document_id", "relevance"], header=None).set_index(['query_id', 'document_id'])
+    runs_pd = pd.read_csv(runfile, sep=" ", names=["query_id", "runidx", "document_id", "rank", "score", "runtype"], header=None).set_index(['query_id', 'document_id'])
+
+    joined_pd = qrels_pd.join(runs_pd, how="inner", lsuffix="_qrel", rsuffix="_run")
+    print(joined_pd)
+
+    """
+    num_hit = 0
+    num_total_queries = 0
+
+    run_it = iter(runs)
+    run = next(run_it)
+
+    qrel_it = iter(qrels)
+    qrel = next(qrel_it)
+
+    query_rel_doc_ids = list()
+    prev_query_id = None
+
+    while(True):
+        num_total_queries += 1
+
+        if(qrel.query_id != prev_query_id):
+            query_rel_doc_ids.clear()
+
+        if(qrel.relevance > 0):
+            query_rel_doc_ids.append(qrel.doc_id)
+
+        while(qrel.query_id == run.query_id):
+            if(qrel.doc_id == run.doc_id):
+                num_hit += 1
+
+            try:
+                run = next(run_it)
+            except StopIteration:
+                break
+        
+        try:
+            qrel = next(qrel_it)
+        except StopIteration:
+            break
+
+
+
+    for qrel in qrels:
+        # qrel: ('query_id', 'doc_id', 'relevance', 'iteration')
+
+        while(run.query_id == qrel.query_id):
+            # run: ('query_id', 'doc_id', 'score')    
+
+            num_total_queries += 1
+
+            if(run.doc_id == qrel.doc_id):
+                num_hit += 1
+                break
+            
+
+            try:
+                run = next(run_it)
+            except StopIteration:
+                break
+    print(f"Rel doc within retreived at {num_hit} / {(num_total_queries)}")
+    """
+
+
+    
 
     ndcg_measure = [nDCG(cutoff=cutoff) for cutoff in cutoffs]
     p_measure = [P(cutoff=cutoff) for cutoff in cutoffs]
@@ -81,7 +156,7 @@ def main():
     print("Evaluating on:")
     print(all_measures)
 
-    eval_res = ir_measures.calc_aggregate(all_measures, qrels, run)
+    eval_res = ir_measures.calc_aggregate(all_measures, qrels, runs)
     
     with open(f"{eval_res_out_path}/res.json", 'w', encoding='utf-8') as f:
         f.write("Metric,Value")
