@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import sys
 sys.path.insert(0, '../ColBERT')
@@ -28,15 +29,16 @@ if __name__=='__main__':
     dataset_fraction = 'test'
     collection = os.path.join(dataroot, f'collection_{dataset_fraction}.tsv')
 
+    colbert_checkpoint = "colbertmath4" #"colbertv2.0"
 
     nbits = 2
     doc_maxlen = 512
     query_maxlen = 128
 
-    checkpoint = '/home/past12am/Projects/MathIR/ColBERTCheckpoints/colbertmath4'
+    checkpoint = f'/home/past12am/Projects/MathIR/ColBERTCheckpoints/{colbert_checkpoint}'
     index_name = f'arqmath.{dataset_fraction}.{nbits}bits'
 
-    with Run().context(RunConfig(nranks=1, experiment="exp_colbertmath4")):
+    with Run().context(RunConfig(nranks=1, experiment=f"exp_{colbert_checkpoint}_{datetime.datetime.now()}")):
 
         config = ColBERTConfig(
             nbits=nbits,

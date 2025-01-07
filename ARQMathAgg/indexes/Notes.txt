@@ -1,3 +1,0 @@
-colbertv2.0, colbertmath, colbertmath2 --> dataset
-colbertmath3 --> dataset_2_3
-colbertmath4 --> dataset_v2
