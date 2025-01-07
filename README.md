@@ -1,12 +1,7 @@
 # MathIR
 Welcome to the MathIR repository. This retrieval system is built around ColBERT and ALBERT to query mathematics related datasets in a piece-wise fashion. The following image shows architecture of the system:
 
-<object data="file://graphics/system-architecture.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="file://graphics/system-architecture.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="file://graphics/system-architecture.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
-
+![image](graphics/system-architecture.svg)
 
 ## Setup
 After Cloning this repository:
