@@ -39,9 +39,9 @@ def main():
 
     #   Settings
     gen_run_file = True
-    k = 50
-    cutoffs = [5,10,50]
-    break_at = None
+    k = 25
+    cutoffs = [5,10,25]
+    break_at = 20000
 
 
 
@@ -77,72 +77,6 @@ def main():
     # Evaluate run
     qrels = ir_measures.read_trec_qrels(qrelfile)
     runs = ir_measures.read_trec_run(runfile)
-
-    qrels_pd = pd.read_csv(qrelfile, sep=" ", names=["query_id", "zero", "document_id", "relevance"], header=None).set_index(['query_id', 'document_id'])
-    runs_pd = pd.read_csv(runfile, sep=" ", names=["query_id", "runidx", "document_id", "rank", "score", "runtype"], header=None).set_index(['query_id', 'document_id'])
-
-    joined_pd = qrels_pd.join(runs_pd, how="inner", lsuffix="_qrel", rsuffix="_run")
-    print(joined_pd)
-
-    """
-    num_hit = 0
-    num_total_queries = 0
-
-    run_it = iter(runs)
-    run = next(run_it)
-
-    qrel_it = iter(qrels)
-    qrel = next(qrel_it)
-
-    query_rel_doc_ids = list()
-    prev_query_id = None
-
-    while(True):
-        num_total_queries += 1
-
-        if(qrel.query_id != prev_query_id):
-            query_rel_doc_ids.clear()
-
-        if(qrel.relevance > 0):
-            query_rel_doc_ids.append(qrel.doc_id)
-
-        while(qrel.query_id == run.query_id):
-            if(qrel.doc_id == run.doc_id):
-                num_hit += 1
-
-            try:
-                run = next(run_it)
-            except StopIteration:
-                break
-        
-        try:
-            qrel = next(qrel_it)
-        except StopIteration:
-            break
-
-
-
-    for qrel in qrels:
-        # qrel: ('query_id', 'doc_id', 'relevance', 'iteration')
-
-        while(run.query_id == qrel.query_id):
-            # run: ('query_id', 'doc_id', 'score')    
-
-            num_total_queries += 1
-
-            if(run.doc_id == qrel.doc_id):
-                num_hit += 1
-                break
-            
-
-            try:
-                run = next(run_it)
-            except StopIteration:
-                break
-    print(f"Rel doc within retreived at {num_hit} / {(num_total_queries)}")
-    """
-
-
     
 
     ndcg_measure = [nDCG(cutoff=cutoff) for cutoff in cutoffs]
@@ -159,8 +93,8 @@ def main():
     eval_res = ir_measures.calc_aggregate(all_measures, qrels, runs)
     
     with open(f"{eval_res_out_path}/res.json", 'w', encoding='utf-8') as f:
-        f.write("Metric,Value")
-        for measure in eval_res:
+        f.write("Metric,Value\n")
+        for measure in all_measures:
             f.write(f"{str(measure)},{eval_res[measure]}\n")
     
 
