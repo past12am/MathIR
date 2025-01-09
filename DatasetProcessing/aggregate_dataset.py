@@ -29,7 +29,7 @@ def concatenate_answers(answers, corr_idx):
 
 
 
-def main(data_path, out_path, correct_percentage, min_answers, max_answers, filename_postfix):
+def main(data_path, out_path, correct_percentage, min_answers, max_answers, filename_postfix, filename_postpostfix=""):
     collection_path = f'{data_path}/collection_{filename_postfix}.tsv'
     triples_path = f'{data_path}/triples_{filename_postfix}.jsonl'
 
@@ -92,7 +92,7 @@ def main(data_path, out_path, correct_percentage, min_answers, max_answers, file
         ctr += 1
 
     
-    with open(f'{out_path}/collection_agg_{filename_postfix}.json', 'w', encoding='utf-8') as f:
+    with open(f'{out_path}/collection_agg_{filename_postfix}{filename_postpostfix}.json', 'w', encoding='utf-8') as f:
         f.write("[")
 
         for t_ctr, agg_sample in enumerate(collection_agg):
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     out_path = "./ARQMathAgg/dataset_v2/aggregates/"
     correct_percentage = 0.5  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
-    min_answers = 5
-    max_answers = 10
+    min_answers = 24
+    max_answers = 30
 
-    main(data_path, out_path, correct_percentage, min_answers, max_answers, "test")
+    main(data_path, out_path, correct_percentage, min_answers, max_answers, "test", "_extended")

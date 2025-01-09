@@ -92,7 +92,7 @@ def main():
 
     eval_res = ir_measures.calc_aggregate(all_measures, qrels, runs)
     
-    with open(f"{eval_res_out_path}/res.json", 'w', encoding='utf-8') as f:
+    with open(f"{eval_res_out_path}/res.csv", 'w', encoding='utf-8') as f:
         f.write("Metric,Value\n")
         for measure in all_measures:
             f.write(f"{str(measure)},{eval_res[measure]}\n")
