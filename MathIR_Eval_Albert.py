@@ -40,8 +40,8 @@ def parse_all_documents(dataset_base_path, collection_name, queries_name, meta_n
 
 
     #   Output
-    gen_runfile = False
-    break_at = 1000
+    gen_runfile = True
+    break_at = 10000
 
     eval_res_out_path = f'./Evaluation/ALBERT/{albert_classifier.replace("/", "_")}/'
     runfile = f'{eval_res_out_path}/run'
