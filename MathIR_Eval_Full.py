@@ -62,7 +62,7 @@ def main():
 
     #   Evaluation
     gen_run_file = True
-    break_at = 20000
+    break_at = 10000
     cutoffs = [5,10,25]
 
     perform_doc_aggregation = False         # false: ALBERT as a re-ranker,     true: ALBERT as selection/ranking of subset (performance issue)
@@ -205,8 +205,8 @@ def main():
     eval_res = ir_measures.calc_aggregate(all_measures, qrels, runs)
     
     with open(f"{eval_res_out_path}/res.json", 'w', encoding='utf-8') as f:
-        f.write("Metric,Value")
-        for measure in eval_res:
+        f.write("Metric,Value\n")
+        for measure in all_measures:
             f.write(f"{str(measure)},{eval_res[measure]}\n")
     
 

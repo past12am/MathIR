@@ -115,7 +115,7 @@ if __name__ == "__main__":
     out_path = "./ARQMathAgg/dataset_v2/aggregates/"
     correct_percentage = 0.5  # --> valid_p = 1 - train_p, no test set, because ARQMath provides test set
 
-    min_answers = 2
-    max_answers = 3
+    min_answers = 5
+    max_answers = 10
 
     main(data_path, out_path, correct_percentage, min_answers, max_answers, "test")
