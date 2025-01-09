@@ -16,16 +16,8 @@ from tqdm import tqdm
 def main():
     # Configuration
 
-    #   Dataset
-    collection_path = './ARQMathAgg/dataset_v2/collection_test.tsv'
-    queries_path = './ARQMathAgg/dataset_v2/queries_test.tsv'
-    triples_path = './ARQMathAgg/dataset_v2/triples_test.jsonl'
-
-    qrelfile = './ARQMathAgg/dataset_v2/qrel_test'
-
-
     #   ColBERT
-    colbert_version = "colbertmath4" #"colbertv2.0"
+    colbert_version = "colbertv2.0" #"colbertmath4" #"colbertv2.0"
 
     colbert_checkpoint = f'./ColBERTCheckpoints/{colbert_version}'
 
@@ -33,12 +25,21 @@ def main():
     colbert_index = 'arqmath.test.2bits'
 
 
+    #   Dataset
+    collection_path = './ARQMathAgg/dataset_v2/collection_test.tsv'
+    queries_path = './ARQMathAgg/dataset_v2/queries_test.tsv'
+    triples_path = './ARQMathAgg/dataset_v2/triples_test.jsonl'
+
+    #qrelfile = './ARQMathAgg/dataset_v2/qrel_test'
+    qrelfile = f'./Evaluation/ColBERT/{colbert_version}/qrel_cherrypicked'
+
+
     #   Output
     eval_res_out_path = f'./Evaluation/ColBERT/{colbert_version}/'
 
 
     #   Settings
-    gen_run_file = True
+    gen_run_file = False
     k = 25
     cutoffs = [5,10,25]
     break_at = 20000

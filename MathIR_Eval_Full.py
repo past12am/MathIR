@@ -21,18 +21,6 @@ from tqdm import tqdm
 def main():
     # Configuration
 
-    #   Dataset
-    root_path = './ARQMathAgg/dataset_v2'
-    dataset_fraction = 'test'
-
-    collection_path = f'{root_path}/collection_{dataset_fraction}.tsv'
-    queries_path = f'{root_path}/queries_{dataset_fraction}.tsv'
-
-    agg_path = f'{root_path}/aggregates/collection_agg_{dataset_fraction}.json'
-
-
-    qrelfile = './ARQMathAgg/dataset_v2/qrel_test'
-
 
     #   ColBERT
     colbert_version = "colbertmath4" #"colbertv2.0"
@@ -54,6 +42,20 @@ def main():
     k_albert = 25
 
 
+    #   Dataset
+    root_path = './ARQMathAgg/dataset_v2'
+    dataset_fraction = 'test'
+
+    collection_path = f'{root_path}/collection_{dataset_fraction}.tsv'
+    queries_path = f'{root_path}/queries_{dataset_fraction}.tsv'
+
+    agg_path = f'{root_path}/aggregates/collection_agg_{dataset_fraction}.json'
+
+
+    #qrelfile = './ARQMathAgg/dataset_v2/qrel_test'
+    qrelfile = f'./Evaluation/Full/{colbert_version}_{albert_version}/qrel_cherrypicked'
+
+
 
     #   Output
     eval_res_out_path = f'./Evaluation/Full/{colbert_version}_{albert_version}/'
@@ -61,7 +63,7 @@ def main():
 
 
     #   Evaluation
-    gen_run_file = True
+    gen_run_file = False
     break_at = 10000
     cutoffs = [5,10,25]
 
@@ -180,10 +182,10 @@ def main():
                     break
                 
 
-    num_iter = len(queries) if break_at is None else break_at
-    print("Average Retrieval Times for:")
-    print(f"ColBERT[k={k_colbert}]: {total_colbert_time/num_iter}")
-    print(f"ALBERT[k={total_samples_eval_albert/num_iter} (avg)]: {total_albert_time/num_iter}")
+        num_iter = len(queries) if break_at is None else break_at
+        print("Average Retrieval Times for:")
+        print(f"ColBERT[k={k_colbert}]: {total_colbert_time/num_iter}")
+        print(f"ALBERT[k={total_samples_eval_albert/num_iter} (avg)]: {total_albert_time/num_iter}")
 
 
     # Evaluate run
