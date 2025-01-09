@@ -65,7 +65,7 @@ The dataset consists of the following files:
 
 ## ALBERT
 ### Evaluation
-Adapt settings in and run ```MathIR_Eval_Colbert.py``` to generate an ```Evaluation/ALBERT/.../run``` (optional, if it already exists) and ```Evaluation/ALBERT/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used.
+Adapt settings in and run ```MathIR_Eval_ALBERT.py``` to generate an ```Evaluation/ALBERT/.../run``` (optional, if it already exists) and ```Evaluation/ALBERT/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used. If you set the ```break_at``` property to a value that is not None you need to additionally set the properties in and run ```DatasetProcessing/cherrypick_qrel``` to generate a qrel file for your evaluation. After doing so rerun the ```MathIR_Eval_ALBERT.py``` with ```gen_run_file=False``` to generate a res.csv file that contains the corrected evaluation results.
 
 ## ColBERT
 Skip Training and Indexing if you downloaded the checkpoints and indexes.
@@ -77,7 +77,7 @@ Although resouce intensive, training ColBERT is an easy task. Just set your desi
 To index the collection_test.tsv part of the dataset set the paths in and run the file ```ColBERTScripts/ColBERT_index.py```. This will take quite some memory and time (we do not recommend to index the test dataset, unless you know you have the resources available). Furthermore, note that an out-of-memory error during indexing can be mitigated by adapting line 121 (```batch_size = 2 ** 20```) in ```ColBERT/colbert/search/index_storage.py``` within your cloned ColBERT source.
 
 ### Evaluation
-Adapt settings in and run ```MathIR_Eval_Colbert.py``` to generate an ```Evaluation/ColBERT/.../run``` (optional, if it already exists) and ```Evaluation/ColBERT/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used.
+Adapt settings in and run ```MathIR_Eval_Colbert.py``` to generate an ```Evaluation/ColBERT/.../run``` (optional, if it already exists) and ```Evaluation/ColBERT/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used. If you set the ```break_at``` property to a value that is not None you need to additionally set the properties in and run ```DatasetProcessing/cherrypick_qrel``` to generate a qrel file for your evaluation. After doing so rerun the ```MathIR_Eval_Colbert.py``` with ```gen_run_file=False``` to generate a res.csv file that contains the corrected evaluation results.
 
 
 ## MathIR System
@@ -103,4 +103,4 @@ Results:
 
 
 ### End-to-end Evaluation
-Adapt settings in and run ```MathIR_Eval_Full.py``` to generate an ```Evaluation/Full/.../run``` (optional, if it already exists) and ```Evaluation/Full/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used.
+Adapt settings in and run ```MathIR_Eval_Full.py``` to generate an ```Evaluation/Full/.../run``` (optional, if it already exists) and ```Evaluation/Full/.../res.csv``` files, where the json file holds the results for all evaluated metrics. You might include additional metrics or adapt the evaluated metrics by adjusting the python script. For further information we refer to the *ir-measures* python library (https://ir-measur.es/en/latest/) we used. If you set the ```break_at``` property to a value that is not None you need to additionally set the properties in and run ```DatasetProcessing/cherrypick_qrel``` to generate a qrel file for your evaluation. After doing so rerun the ```MathIR_Eval_Full.py``` with ```gen_run_file=False``` to generate a res.csv file that contains the corrected evaluation results.
