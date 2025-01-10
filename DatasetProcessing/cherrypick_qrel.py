@@ -1,5 +1,5 @@
 
-evaluation_path = 'Full/colbertmath4_albert-albert-base-v2_AnReu-albert-for-math-ar-base-ft'
+evaluation_path = 'ALBERT/AnReu_albert-for-math-ar-base-ft' #'Full/colbertmath4_albert-albert-base-v2_AnReu-albert-for-math-ar-base-ft'
 qrelfile_parent = './ARQMathAgg/dataset_v2/qrel_test'
 
 eval_res_out_path = f'./Evaluation/{evaluation_path}'
