@@ -25,13 +25,6 @@ def main():
 def parse_all_documents(dataset_base_path, collection_name, queries_name, meta_name, qrel_name):
     # Configuration
 
-    #   Dataset
-    collection_path = join(dataset_base_path, collection_name)
-    queries_path = join(dataset_base_path, queries_name)
-    meta_path = join(dataset_base_path, meta_name)
-    qrelfile = join(dataset_base_path, qrel_name)
-
-
     #   ALBERT
     k = 25
     albert_tokenizer = "albert/albert-base-v2"
@@ -45,6 +38,15 @@ def parse_all_documents(dataset_base_path, collection_name, queries_name, meta_n
 
     eval_res_out_path = f'./Evaluation/ALBERT/{albert_classifier.replace("/", "_")}/'
     runfile = f'{eval_res_out_path}/run'
+
+
+    #   Dataset
+    collection_path = join(dataset_base_path, collection_name)
+    queries_path = join(dataset_base_path, queries_name)
+    meta_path = join(dataset_base_path, meta_name)
+
+    qrelfile = f'{eval_res_out_path}/qrel_cherrypicked'
+
 
     try:
         with open(meta_path, 'r', encoding='utf-8') as file:
